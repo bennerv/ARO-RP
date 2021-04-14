@@ -260,8 +260,16 @@ func (m *manager) deleteRoleDefinition(ctx context.Context) error {
 func (m *manager) Delete(ctx context.Context) error {
 	resourceGroup := stringutils.LastTokenByte(m.doc.OpenShiftCluster.Properties.ClusterProfile.ResourceGroupID, '/')
 
+	rgManagedByARO := true
+	rg, err := m.resourceGroups.Get(ctx, resourceGroup)
+	if err != nil {
+		// TODO - what should we assume if we can't get the resource group?
+	} else if !strings.EqualFold(*rg.ManagedBy, m.doc.OpenShiftCluster.ID) {
+		rgManagedByARO = false
+	}
+
 	m.log.Printf("deleting dns")
-	err := m.dns.Delete(ctx, m.doc.OpenShiftCluster)
+	err = m.dns.Delete(ctx, m.doc.OpenShiftCluster)
 	if err != nil {
 		return err
 	}
@@ -272,10 +280,13 @@ func (m *manager) Delete(ctx context.Context) error {
 		return err
 	}
 
-	m.log.Printf("deleting role assignments")
-	err = m.deleteRoleAssignments(ctx)
-	if err != nil {
-		return err
+	// Don't delete resources if we don't own rg
+	if !rgManagedByARO {
+		m.log.Printf("deleting role assignments")
+		err = m.deleteRoleAssignments(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	m.log.Printf("deleting role definition")
@@ -284,23 +295,26 @@ func (m *manager) Delete(ctx context.Context) error {
 		return err
 	}
 
-	m.log.Printf("deleting resources")
-	err = m.deleteResources(ctx)
-	if err != nil {
-		return err
-	}
+	// Don't delete resources if we don't own rg
+	if !rgManagedByARO {
+		m.log.Printf("deleting resources")
+		err = m.deleteResources(ctx)
+		if err != nil {
+			return err
+		}
 
-	m.log.Printf("deleting resource group %s", resourceGroup)
-	err = m.resourceGroups.DeleteAndWait(ctx, resourceGroup)
-	if detailedErr, ok := err.(autorest.DetailedError); ok &&
-		(detailedErr.StatusCode == http.StatusForbidden || detailedErr.StatusCode == http.StatusNotFound) {
-		err = nil
-	}
-	if azureerrors.HasAuthorizationFailedError(err) {
-		err = nil
-	}
-	if err != nil {
-		return err
+		m.log.Printf("deleting resource group %s", resourceGroup)
+		err = m.resourceGroups.DeleteAndWait(ctx, resourceGroup)
+		if detailedErr, ok := err.(autorest.DetailedError); ok &&
+			(detailedErr.StatusCode == http.StatusForbidden || detailedErr.StatusCode == http.StatusNotFound) {
+			err = nil
+		}
+		if azureerrors.HasAuthorizationFailedError(err) {
+			err = nil
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	if !m.env.IsDevelopmentMode() {
