@@ -59,6 +59,7 @@ func (c *openShiftClusterConverter) ToExternal(oc *api.OpenShiftCluster) interfa
 			},
 			StorageSuffix: oc.Properties.StorageSuffix,
 			InfraID:       oc.Properties.InfraID,
+			SecretVersion: oc.Properties.SecretVersion,
 		},
 	}
 

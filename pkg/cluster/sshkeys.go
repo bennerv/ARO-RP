@@ -15,7 +15,7 @@ import (
 
 func (m *manager) generateSSHKey(ctx context.Context) error {
 	var err error
-	m.doc, err = m.db.PatchWithLease(ctx, m.doc.Key, func(doc *api.OpenShiftClusterDocument) error {
+	_, err = m.db.PatchWithLease(ctx, m.doc.Key, func(doc *api.OpenShiftClusterDocument) error {
 		if doc.OpenShiftCluster.Properties.SSHKey == nil {
 			sshKey, err := rsa.GenerateKey(rand.Reader, 2048)
 			if err != nil {

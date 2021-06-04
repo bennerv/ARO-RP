@@ -14,8 +14,9 @@ import (
 )
 
 type xChaCha20Poly1305 struct {
-	aead       cipher.AEAD
-	randReader io.Reader
+	aead          cipher.AEAD
+	randReader    io.Reader
+	secretVersion string
 }
 
 var _ AEAD = (*xChaCha20Poly1305)(nil)
@@ -52,4 +53,8 @@ func (c *xChaCha20Poly1305) Seal(input []byte) ([]byte, error) {
 	}
 
 	return append(nonce, c.aead.Seal(nil, nonce, input, nil)...), nil
+}
+
+func (c *xChaCha20Poly1305) GetSealSecretVersion() string {
+	return c.secretVersion
 }

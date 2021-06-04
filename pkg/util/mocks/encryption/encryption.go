@@ -33,6 +33,20 @@ func (m *MockAEAD) EXPECT() *MockAEADMockRecorder {
 	return m.recorder
 }
 
+// GetSealSecretVersion mocks base method.
+func (m *MockAEAD) GetSealSecretVersion() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSealSecretVersion")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetSealSecretVersion indicates an expected call of GetSealSecretVersion.
+func (mr *MockAEADMockRecorder) GetSealSecretVersion() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSealSecretVersion", reflect.TypeOf((*MockAEAD)(nil).GetSealSecretVersion))
+}
+
 // Open mocks base method.
 func (m *MockAEAD) Open(arg0 []byte) ([]byte, error) {
 	m.ctrl.T.Helper()

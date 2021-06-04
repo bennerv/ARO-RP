@@ -37,7 +37,7 @@ type Manager interface {
 	GetBase64Secret(context.Context, string, string) ([]byte, error)
 	GetBase64Secrets(context.Context, string) ([][]byte, error)
 	GetCertificateSecret(context.Context, string) (*rsa.PrivateKey, []*x509.Certificate, error)
-	GetSecret(context.Context, string) (azkeyvault.SecretBundle, error)
+	GetSecret(context.Context, string, string) (azkeyvault.SecretBundle, error)
 	GetSecrets(context.Context) ([]azkeyvault.SecretItem, error)
 	SetCertificateIssuer(ctx context.Context, issuerName string, parameter azkeyvault.CertificateIssuerSetParameters) (result azkeyvault.IssuerBundle, err error)
 	SetSecret(context.Context, string, azkeyvault.SecretSetParameters) error
@@ -196,8 +196,8 @@ func (m *manager) GetCertificateSecret(ctx context.Context, secretName string) (
 	return key, certs, nil
 }
 
-func (m *manager) GetSecret(ctx context.Context, secretName string) (azkeyvault.SecretBundle, error) {
-	return m.kv.GetSecret(ctx, m.keyvaultURI, secretName, "")
+func (m *manager) GetSecret(ctx context.Context, secretName, version string) (azkeyvault.SecretBundle, error) {
+	return m.kv.GetSecret(ctx, m.keyvaultURI, secretName, version)
 }
 
 func (m *manager) GetSecrets(ctx context.Context) ([]azkeyvault.SecretItem, error) {
