@@ -51,6 +51,7 @@ type OpenShiftClusterProperties struct {
 	RegistryProfiles                []RegistryProfile       `json:"registryProfiles,omitempty"`
 	ImageRegistryStorageAccountName string                  `json:"imageRegistryStorageAccountName,omitempty"`
 	InfraID                         string                  `json:"infraId,omitempty"`
+	SecretVersion                   string                  `json:"secretVersion,omitempty"`
 }
 
 // ProvisioningState represents a provisioning state.

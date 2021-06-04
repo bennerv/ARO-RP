@@ -26,9 +26,10 @@ const (
 )
 
 type openShiftClusters struct {
-	c     cosmosdb.OpenShiftClusterDocumentClient
-	collc cosmosdb.CollectionClient
-	uuid  string
+	c             cosmosdb.OpenShiftClusterDocumentClient
+	collc         cosmosdb.CollectionClient
+	secretVersion string
+	uuid          string
 }
 
 // OpenShiftClusters is the database interface for OpenShiftClusterDocuments
@@ -52,7 +53,7 @@ type OpenShiftClusters interface {
 }
 
 // NewOpenShiftClusters returns a new OpenShiftClusters
-func NewOpenShiftClusters(ctx context.Context, isLocalDevelopmentMode bool, dbc cosmosdb.DatabaseClient) (OpenShiftClusters, error) {
+func NewOpenShiftClusters(ctx context.Context, isLocalDevelopmentMode bool, dbc cosmosdb.DatabaseClient, secretVersion string) (OpenShiftClusters, error) {
 	dbid, err := Name(isLocalDevelopmentMode)
 	if err != nil {
 		return nil, err
@@ -84,14 +85,15 @@ func NewOpenShiftClusters(ctx context.Context, isLocalDevelopmentMode bool, dbc 
 	}
 
 	documentClient := cosmosdb.NewOpenShiftClusterDocumentClient(collc, collOpenShiftClusters)
-	return NewOpenShiftClustersWithProvidedClient(documentClient, collc, uuid.Must(uuid.NewV4()).String()), nil
+	return NewOpenShiftClustersWithProvidedClient(documentClient, collc, uuid.Must(uuid.NewV4()).String(), secretVersion), nil
 }
 
-func NewOpenShiftClustersWithProvidedClient(client cosmosdb.OpenShiftClusterDocumentClient, collectionClient cosmosdb.CollectionClient, uuid string) OpenShiftClusters {
+func NewOpenShiftClustersWithProvidedClient(client cosmosdb.OpenShiftClusterDocumentClient, collectionClient cosmosdb.CollectionClient, uuid string, secretVersion string) OpenShiftClusters {
 	return &openShiftClusters{
-		c:     client,
-		collc: collectionClient,
-		uuid:  uuid,
+		c:             client,
+		collc:         collectionClient,
+		secretVersion: secretVersion,
+		uuid:          uuid,
 	}
 }
 
@@ -104,6 +106,10 @@ func (c *openShiftClusters) Create(ctx context.Context, doc *api.OpenShiftCluste
 	doc.PartitionKey, err = c.partitionKey(doc.Key)
 	if err != nil {
 		return nil, err
+	}
+
+	if doc.OpenShiftCluster != nil {
+		doc.OpenShiftCluster.Properties.SecretVersion = c.secretVersion
 	}
 
 	doc, err = c.c.Create(ctx, doc.PartitionKey, doc, nil)
@@ -192,6 +198,8 @@ func (c *openShiftClusters) patch(ctx context.Context, key string, f func(*api.O
 			return
 		}
 
+		doc.OpenShiftCluster.Properties.SecretVersion = c.secretVersion
+
 		err = f(doc)
 		if err != nil {
 			return
@@ -226,6 +234,8 @@ func (c *openShiftClusters) update(ctx context.Context, doc *api.OpenShiftCluste
 	if doc.Key != strings.ToLower(doc.Key) {
 		return nil, fmt.Errorf("key %q is not lower case", doc.Key)
 	}
+
+	doc.OpenShiftCluster.Properties.SecretVersion = c.secretVersion
 
 	return c.c.Replace(ctx, doc.PartitionKey, doc, options)
 }
