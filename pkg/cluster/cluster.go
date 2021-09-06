@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	configclient "github.com/openshift/client-go/config/clientset/versioned"
+	registryclient "github.com/openshift/client-go/imageregistry/clientset/versioned"
 	operatorclient "github.com/openshift/client-go/operator/clientset/versioned"
 	samplesclient "github.com/openshift/client-go/samples/clientset/versioned"
 	securityclient "github.com/openshift/client-go/security/clientset/versioned"
@@ -79,15 +80,16 @@ type manager struct {
 	subnet  subnet.Manager
 	graph   graph.Manager
 
-	kubernetescli kubernetes.Interface
-	extensionscli extensionsclient.Interface
-	maocli        maoclient.Interface
-	mcocli        mcoclient.Interface
-	operatorcli   operatorclient.Interface
-	configcli     configclient.Interface
-	samplescli    samplesclient.Interface
-	securitycli   securityclient.Interface
-	arocli        aroclient.Interface
+	kubernetescli  kubernetes.Interface
+	extensionscli  extensionsclient.Interface
+	maocli         maoclient.Interface
+	mcocli         mcoclient.Interface
+	operatorcli    operatorclient.Interface
+	configcli      configclient.Interface
+	samplescli     samplesclient.Interface
+	securitycli    securityclient.Interface
+	arocli         aroclient.Interface
+	registryclient registryclient.Interface
 }
 
 // New returns a cluster manager
