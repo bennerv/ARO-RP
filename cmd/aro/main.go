@@ -79,6 +79,9 @@ func main() {
 	case "operator":
 		checkArgs(2)
 		err = operator(ctx, log)
+	case "nic":
+		checkArgs(2)
+		err = nic(ctx, log)
 	default:
 		usage()
 		os.Exit(2)
