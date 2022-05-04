@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	mgmtnetwork "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2020-08-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/Azure/ARO-RP/pkg/api"
@@ -49,7 +48,7 @@ func (m *manager) enableServiceEndpoints(ctx context.Context) error {
 					subnet.ServiceEndpoints = &[]mgmtnetwork.ServiceEndpointPropertiesFormat{}
 				}
 				*subnet.ServiceEndpoints = append(*subnet.ServiceEndpoints, mgmtnetwork.ServiceEndpointPropertiesFormat{
-					Service:   to.StringPtr(endpoint),
+					Service:   &endpoint,
 					Locations: &[]string{"*"},
 				})
 				changed = true
