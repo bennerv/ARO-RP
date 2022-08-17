@@ -17,12 +17,26 @@ type actionFunction func(context.Context) error
 
 // Action returns a Step which will execute the action function `f`. Errors from
 // `f` are returned directly.
+<<<<<<< Updated upstream
 func Action(f actionFunction) Step {
 	return actionStep{f}
+=======
+// The metricsTopic parameter is optional and only the first element is considered if present.
+func Action(f actionFunction) Step {
+	return actionStep{
+		f:            f,
+		metricsTopic: FriendlyName(f),
+	}
+>>>>>>> Stashed changes
 }
 
 type actionStep struct {
+<<<<<<< Updated upstream
 	f actionFunction
+=======
+	f            actionFunction
+	metricsTopic string
+>>>>>>> Stashed changes
 }
 
 func (s actionStep) run(ctx context.Context, log *logrus.Entry) error {
@@ -31,3 +45,10 @@ func (s actionStep) run(ctx context.Context, log *logrus.Entry) error {
 func (s actionStep) String() string {
 	return fmt.Sprintf("[Action %s]", FriendlyName(s.f))
 }
+<<<<<<< Updated upstream
+=======
+
+func (s actionStep) MetricsTopic() string {
+	return fmt.Sprintf("action.%s", s.metricsTopic)
+}
+>>>>>>> Stashed changes

@@ -151,7 +151,11 @@ func (m *manager) callInstaller(ctx context.Context) error {
 func (m *manager) Install(ctx context.Context) error {
 	steps := map[api.InstallPhase][]steps.Step{
 		api.InstallPhaseBootstrap: {
+<<<<<<< Updated upstream
 			steps.AuthorizationRefreshingAction(m.fpAuthorizer, steps.Action(m.validateResources)),
+=======
+			steps.AuthorizationRefreshingAction(m.fpAuthorizer, steps.Action(m.validateResources), "validate_resources"),
+>>>>>>> Stashed changes
 			steps.Action(m.ensureACRToken),
 			steps.Action(m.ensureInfraID),
 			steps.Action(m.ensureSSHKey),
@@ -229,6 +233,18 @@ func (m *manager) runSteps(ctx context.Context, s []steps.Step) error {
 	err := steps.Run(ctx, m.log, 10*time.Second, s)
 	if err != nil {
 		m.gatherFailureLogs(ctx)
+<<<<<<< Updated upstream
+=======
+	} else {
+		var totalInstallTime int64
+		for topic, duration := range stepsTimeRun {
+			fmt.Printf("backend.openshiftcluster.installtime.%s: %d", topic, duration)
+			m.metricsEmitter.EmitGauge(fmt.Sprintf("backend.openshiftcluster.installtime.%s", topic), duration, nil)
+			totalInstallTime += duration
+		}
+		m.metricsEmitter.EmitGauge("backend.openshiftcluster.installtime.total", totalInstallTime, nil)
+		fmt.Printf("backend.openshiftcluster.installtime.total: %d", totalInstallTime)
+>>>>>>> Stashed changes
 	}
 	return err
 }

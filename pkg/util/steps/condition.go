@@ -25,11 +25,21 @@ type conditionFunction func(context.Context) (bool, error)
 // out with a failure when more time than the provided timeout has elapsed
 // without f returning (true, nil). Errors from `f` are returned directly.
 // If fail is set to false - it will not fail after timeout.
+<<<<<<< Updated upstream
 func Condition(f conditionFunction, timeout time.Duration, fail bool) Step {
 	return conditionStep{
 		f:       f,
 		fail:    fail,
 		timeout: timeout,
+=======
+// The metricsTopic parameter is optional and only the first element is considered if present.
+func Condition(f conditionFunction, timeout time.Duration, fail bool) Step {
+	return conditionStep{
+		f:            f,
+		fail:         fail,
+		timeout:      timeout,
+		metricsTopic: FriendlyName(f),
+>>>>>>> Stashed changes
 	}
 }
 
@@ -38,6 +48,10 @@ type conditionStep struct {
 	fail         bool
 	timeout      time.Duration
 	pollInterval time.Duration
+<<<<<<< Updated upstream
+=======
+	metricsTopic string
+>>>>>>> Stashed changes
 }
 
 func (c conditionStep) run(ctx context.Context, log *logrus.Entry) error {
@@ -72,3 +86,10 @@ func (c conditionStep) run(ctx context.Context, log *logrus.Entry) error {
 func (c conditionStep) String() string {
 	return fmt.Sprintf("[Condition %s, timeout %s]", FriendlyName(c.f), c.timeout)
 }
+<<<<<<< Updated upstream
+=======
+
+func (c conditionStep) MetricsTopic() string {
+	return fmt.Sprintf("condition.%s", c.metricsTopic)
+}
+>>>>>>> Stashed changes
