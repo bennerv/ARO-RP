@@ -11,6 +11,7 @@ import (
 
 	"github.com/Azure/ARO-RP/pkg/api"
 	"github.com/Azure/ARO-RP/pkg/util/feature"
+	"github.com/davecgh/go-spew/spew"
 )
 
 // populateMTUSize ensures that every new cluster object has the MTUSize field defined
@@ -63,12 +64,16 @@ func patchMTUSize(m *manager, ctx context.Context, mtuSize api.MTUSize) error {
 
 func (m *manager) determineOutboundType(ctx context.Context) error {
 	var err error
+
+	m.log.Print(spew.Sprint(m.doc.OpenShiftCluster.Properties))
+	m.log.Print(spew.Sprint(m.subscriptionDoc.Subscription.Properties))
+
 	// Determine if this is a cluster with user defined routing
 	outboundType := api.OutboundTypeLoadbalancer
 	if m.doc.OpenShiftCluster.Properties.APIServerProfile.Visibility == api.VisibilityPrivate &&
 		m.doc.OpenShiftCluster.Properties.IngressProfiles[0].Visibility == api.VisibilityPrivate &&
 		feature.IsRegisteredForFeature(m.subscriptionDoc.Subscription.Properties, api.FeatureFlagUserDefinedRouting) {
-		m.doc.OpenShiftCluster.Properties.NetworkProfile.OutboundType = api.OutboundTypeUserDefinedRouting
+
 		outboundType = api.OutboundTypeUserDefinedRouting
 	}
 	m.doc, err = m.db.PatchWithLease(ctx, m.doc.Key, func(doc *api.OpenShiftClusterDocument) error {

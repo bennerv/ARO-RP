@@ -36,7 +36,7 @@ ARO_IMAGE ?= $(ARO_IMAGE_BASE):$(VERSION)
 build-all:
 	go build -tags aro,containers_image_openpgp ./...
 
-aro: generate
+aro:
 	go build -tags aro,containers_image_openpgp,codec.safe -ldflags "-X github.com/Azure/ARO-RP/pkg/util/version.GitCommit=$(VERSION)" ./cmd/aro
 
 runlocal-rp:
@@ -74,7 +74,7 @@ discoverycache:
 generate:
 	go generate ./...
 
-image-aro: aro e2e.test
+image-aro:
 	docker pull $(REGISTRY)/ubi8/ubi-minimal
 	docker build --platform=linux/amd64 --network=host --no-cache -f Dockerfile.aro -t $(ARO_IMAGE) --build-arg REGISTRY=$(REGISTRY) .
 
