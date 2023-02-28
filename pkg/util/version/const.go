@@ -3,12 +3,6 @@ package version
 // Copyright (c) Microsoft Corporation.
 // Licensed under the Apache License 2.0.
 
-import (
-	"github.com/Azure/ARO-RP/pkg/api"
-)
-
-const InstallArchitectureVersion = api.ArchitectureVersionV2
-
 const (
 	DevClusterGenevaLoggingAccount       = "AROClusterLogs"
 	DevClusterGenevaLoggingConfigVersion = "2.4"

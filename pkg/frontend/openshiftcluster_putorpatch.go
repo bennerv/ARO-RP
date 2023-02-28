@@ -22,6 +22,7 @@ import (
 	"github.com/Azure/ARO-RP/pkg/env"
 	"github.com/Azure/ARO-RP/pkg/frontend/middleware"
 	"github.com/Azure/ARO-RP/pkg/util/version"
+	"github.com/Azure/ARO-RP/pkg/util/version/architecture"
 )
 
 func (f *frontend) putOrPatchOpenShiftCluster(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +75,7 @@ func (f *frontend) _putOrPatchOpenShiftCluster(ctx context.Context, log *logrus.
 				Name: originalR.ResourceName,
 				Type: originalR.Provider + "/" + originalR.ResourceType,
 				Properties: api.OpenShiftClusterProperties{
-					ArchitectureVersion: version.InstallArchitectureVersion,
+					ArchitectureVersion: architecture.InstallArchitectureVersion,
 					ProvisioningState:   api.ProvisioningStateSucceeded,
 					CreatedAt:           f.now().UTC(),
 					CreatedBy:           version.GitCommit,

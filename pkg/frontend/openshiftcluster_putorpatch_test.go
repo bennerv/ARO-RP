@@ -28,6 +28,7 @@ import (
 	"github.com/Azure/ARO-RP/pkg/util/cmp"
 	mock_frontend "github.com/Azure/ARO-RP/pkg/util/mocks/frontend"
 	"github.com/Azure/ARO-RP/pkg/util/version"
+	"github.com/Azure/ARO-RP/pkg/util/version/architecture"
 	testdatabase "github.com/Azure/ARO-RP/test/database"
 )
 
@@ -705,7 +706,7 @@ func TestPutOrPatchOpenShiftCluster(t *testing.T) {
 						Name: "resourceName",
 						Type: "Microsoft.RedHatOpenShift/openShiftClusters",
 						Properties: api.OpenShiftClusterProperties{
-							ArchitectureVersion: version.InstallArchitectureVersion,
+							ArchitectureVersion: architecture.InstallArchitectureVersion,
 							ProvisioningState:   api.ProvisioningStateCreating,
 							ProvisionedBy:       version.GitCommit,
 							CreatedAt:           mockCurrentTime,
