@@ -144,9 +144,14 @@ type NetworkProfile struct {
 	// The software defined network (SDN) to use when installing the cluster.
 	SoftwareDefinedNetwork SoftwareDefinedNetwork `json:"softwareDefinedNetwork,omitempty"`
 
-	PodCIDR      string       `json:"podCidr,omitempty"`
-	ServiceCIDR  string       `json:"serviceCidr,omitempty"`
-	MTUSize      MTUSize      `json:"mtuSize,omitempty"`
+	PodCIDR     string  `json:"podCidr,omitempty"`
+	ServiceCIDR string  `json:"serviceCidr,omitempty"`
+	MTUSize     MTUSize `json:"mtuSize,omitempty"`
+
+	// TODO: remove the "mutable:true" portion when we have manually patched clusters
+	// and the day 2 feature of enabling this is allowed. Until then, we may have
+	// support exceptions requing us to manually modify the flag to ensure we have
+	// most up-to-date info here
 	OutboundType OutboundType `json:"outboundType,omitempty" mutable:"true"`
 
 	APIServerPrivateEndpointIP string `json:"privateEndpointIp,omitempty"`

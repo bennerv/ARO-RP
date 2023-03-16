@@ -110,8 +110,8 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	b := ctrl.NewControllerManagedBy(mgr).
 		For(&arov1alpha1.Cluster{}, builder.WithPredicates(clusterPredicate))
 
-		// Controller adds ControllerManagedBy to KubeletConfit created by this controller.
-		// Any changes will trigger reconcile, but only for that config.
+	// Controller adds ControllerManagedBy to KubeletConfig created by this controller.
+	// Any changes will trigger reconcile, but only for that config.
 	return b.
 		Named(ControllerName).
 		Owns(&mcv1.KubeletConfig{}).
