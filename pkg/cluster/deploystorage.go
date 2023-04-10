@@ -113,10 +113,11 @@ func (m *manager) deployStorageTemplate(ctx context.Context, installConfig *inst
 	group := mgmtfeatures.ResourceGroup{
 		Location:  &installConfig.Config.Azure.Region,
 		ManagedBy: to.StringPtr(m.doc.OpenShiftCluster.ID),
+		Tags: *to.StringMapPtr(map[string]string{
+			"purge": "false",
+		}),
 	}
-	if m.env.DeploymentMode() == deployment.Development {
-		group.ManagedBy = nil
-	}
+
 	_, err := m.groups.CreateOrUpdate(ctx, resourceGroup, group)
 	if requestErr, ok := err.(*azure.RequestError); ok &&
 		requestErr.ServiceError != nil && requestErr.ServiceError.Code == "RequestDisallowedByPolicy" {
