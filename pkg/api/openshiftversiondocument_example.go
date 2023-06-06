@@ -16,6 +16,7 @@ func ExampleOpenShiftVersionDocument() *OpenShiftVersionDocument {
 				OpenShiftPullspec: "ab:c",
 				InstallerPullspec: "de:f",
 				Enabled:           true,
+				Default:           false,
 			},
 		},
 	}
