@@ -12,12 +12,16 @@ import (
 // subnets for storage account access, but only if egress lockdown is
 // not enabled.
 func (m *manager) ensureServiceEndpoints(ctx context.Context) error {
+	if m.doc.OpenShiftCluster.Properties.FeatureProfile.GatewayEnabled {
+		return nil
+	}
+
 	subnetIds, err := m.getSubnetIds()
 	if err != nil {
 		return err
 	}
 
-	return m.subnet.CreateOrUpdateFromIds(ctx, subnetIds, m.doc.OpenShiftCluster.Properties.FeatureProfile.GatewayEnabled)
+	return m.subnet.CreateOrUpdateFromIds(ctx, subnetIds)
 }
 
 func (m *manager) getSubnetIds() ([]string, error) {
