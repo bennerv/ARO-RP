@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
+
 	configclient "github.com/openshift/client-go/config/clientset/versioned"
 	imageregistryclient "github.com/openshift/client-go/imageregistry/clientset/versioned"
 	machineclient "github.com/openshift/client-go/machine/clientset/versioned"
@@ -19,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	extensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/Azure/ARO-RP/pkg/api"
 	"github.com/Azure/ARO-RP/pkg/cluster/graph"
@@ -98,6 +100,7 @@ type manager struct {
 	securitycli      securityclient.Interface
 	arocli           aroclient.Interface
 	imageregistrycli imageregistryclient.Interface
+	client           client.Client
 
 	installViaHive     bool
 	adoptViaHive       bool

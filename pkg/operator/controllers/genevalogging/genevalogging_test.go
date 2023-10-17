@@ -4,11 +4,14 @@ package genevalogging
 // Licensed under the Apache License 2.0.
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/go-test/deep"
+	configv1 "github.com/openshift/api/config/v1"
 	operatorv1 "github.com/openshift/api/operator/v1"
 	"github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
@@ -21,6 +24,7 @@ import (
 	_ "github.com/Azure/ARO-RP/pkg/util/scheme"
 	"github.com/Azure/ARO-RP/pkg/util/version"
 	testdatabase "github.com/Azure/ARO-RP/test/database"
+	utilerror "github.com/Azure/ARO-RP/test/util/error"
 )
 
 func getContainer(d *appsv1.DaemonSet, containerName string) (corev1.Container, error) {
@@ -30,6 +34,63 @@ func getContainer(d *appsv1.DaemonSet, containerName string) (corev1.Container, 
 		}
 	}
 	return corev1.Container{}, errors.New("not found")
+}
+
+func clusterVersion(version string) configv1.ClusterVersion {
+	return configv1.ClusterVersion{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "version",
+		},
+		Spec: configv1.ClusterVersionSpec{
+			DesiredUpdate: &configv1.Update{
+				Version: version,
+			},
+		},
+	}
+}
+
+func TestGenevaLoggingNamespaceLabels(t *testing.T) {
+	tests := []struct {
+		name       string
+		cv         configv1.ClusterVersion
+		wantLabels map[string]string
+		wantErr    string
+	}{
+		{
+			name:       "cluster < 4.11, no labels",
+			cv:         clusterVersion("4.10.99"),
+			wantLabels: map[string]string{},
+		},
+		{
+			name:       "cluster >= 4.11, use pod security labels",
+			cv:         clusterVersion("4.11.0"),
+			wantLabels: privilegedNamespaceLabels,
+		},
+		{
+			name:    "cluster version doesn't exist",
+			cv:      configv1.ClusterVersion{},
+			wantErr: `clusterversions.config.openshift.io "version" not found`,
+		},
+		{
+			name:    "invalid version",
+			cv:      clusterVersion("abcd"),
+			wantErr: `could not parse version "abcd"`,
+		},
+	}
+	for _, tt := range tests {
+		ctx := context.Background()
+		r := &Reconciler{
+			log:    logrus.NewEntry(logrus.StandardLogger()),
+			client: ctrlfake.NewClientBuilder().WithObjects(&tt.cv).Build(),
+		}
+
+		labels, err := r.namespaceLabels(ctx)
+		utilerror.AssertErrorMessage(t, err, tt.wantErr)
+
+		if !reflect.DeepEqual(labels, tt.wantLabels) {
+			t.Errorf("got: %v\nwanted:%v\n", labels, tt.wantLabels)
+		}
+	}
 }
 
 func TestGenevaLoggingDaemonset(t *testing.T) {

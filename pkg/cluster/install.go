@@ -18,6 +18,8 @@ import (
 	mcoclient "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned"
 	extensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
 	"github.com/Azure/ARO-RP/pkg/api"
 	"github.com/Azure/ARO-RP/pkg/containerinstall"
@@ -71,16 +73,13 @@ func (m *manager) adminUpdate() []steps.Step {
 		)
 	}
 
-	if isEverything || isRenewCerts {
-		toRun = append(toRun,
-			steps.Action(m.populateDatabaseIntIP),
-		)
-	}
-
 	// Make sure the VMs are switched on and we have an APIServer
 	toRun = append(toRun,
+		steps.Action(m.populateDatabaseIntIP),
 		steps.Action(m.startVMs),
 		steps.Condition(m.apiServersReady, 30*time.Minute, true),
+		steps.Action(m.fixSREKubeconfig),
+		steps.Action(m.fixUserAdminKubeconfig),
 	)
 
 	// Requires Kubernetes clients
@@ -486,6 +485,19 @@ func (m *manager) initializeKubernetesClients(ctx context.Context) error {
 	}
 
 	m.imageregistrycli, err = imageregistryclient.NewForConfig(restConfig)
+	if err != nil {
+		return err
+	}
+
+	mapper, err := apiutil.NewDynamicRESTMapper(restConfig, apiutil.WithLazyDiscovery)
+	if err != nil {
+		return err
+	}
+
+	m.client, err := client.New(restConfig, client.Options{
+		Mapper: mapper,
+	})
+
 	return err
 }
 

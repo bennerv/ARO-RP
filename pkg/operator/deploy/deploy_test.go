@@ -9,14 +9,17 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	configv1 "github.com/openshift/api/config/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	ctrlfake "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"github.com/Azure/ARO-RP/pkg/api"
 	"github.com/Azure/ARO-RP/pkg/util/cmp"
 	mock_env "github.com/Azure/ARO-RP/pkg/util/mocks/env"
+	_ "github.com/Azure/ARO-RP/pkg/util/scheme"
 	utilerror "github.com/Azure/ARO-RP/test/util/error"
 )
 
@@ -136,7 +139,9 @@ func TestCreateDeploymentData(t *testing.T) {
 		name                    string
 		mock                    func(*mock_env.MockInterface, *api.OpenShiftCluster)
 		operatorVersionOverride string
+		clusterVersion          configv1.ClusterVersion
 		expected                deploymentData
+		wantErr                 string
 	}{
 		{
 			name: "no image override, use default",
@@ -178,6 +183,7 @@ func TestCreateDeploymentData(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			controller := gomock.NewController(t)
 			defer controller.Finish()
 
@@ -188,11 +194,13 @@ func TestCreateDeploymentData(t *testing.T) {
 			tt.mock(env, oc)
 
 			o := operator{
-				oc:  oc,
-				env: env,
+				oc:     oc,
+				client: ctrlfake.NewClientBuilder().WithObjects(instance).Build(),
+				env:    env,
 			}
 
-			deploymentData := o.createDeploymentData()
+			deploymentData, err := o.createDeploymentData(ctx)
+			utilerror.AssertErrorMessage(t, err, tt.wantErr)
 			if !reflect.DeepEqual(deploymentData, tt.expected) {
 				t.Errorf("actual deployment: %v, expected %v", deploymentData, tt.expected)
 			}
@@ -229,6 +237,7 @@ func TestOperatorVersion(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			oc := tt.oc()
 
 			controller := gomock.NewController(t)
@@ -244,7 +253,7 @@ func TestOperatorVersion(t *testing.T) {
 				env: _env,
 			}
 
-			staticResources, err := o.createObjects()
+			staticResources, err := o.createObjects(ctx)
 			if err != nil {
 				t.Error(err)
 			}
